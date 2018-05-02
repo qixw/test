@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+
+
+
+    <bean id="kafkaProducerBean" class="com.test.service.impl.KafkaProducerServiceImpl"></bean>
+    <!-- 定义调度对象-->
+    <bean id="kafkaJobDetailFactoryBeanTask" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+             <property name="targetObject">
+                 <ref bean="kafkaProducerBean"></ref>
+             </property>
+
+            <property name="targetMethod">
+                <value>sendMQ</value>
+            </property>
+    </bean>
+
+    <!--定义触发时间-->
+    <bean id="doTime" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+           <property name="jobDetail">
+               <ref bean="kafkaJobDetailFactoryBeanTask"></ref>
+           </property>
+            <property name="cronExpression">
+                <value>*/5 * * * * ?</value>
+            </property>
+    </bean>
+
+    <!-- 总管理类 如果将lazy-init='false'那么容器启动就会执行调度程序  -->
+    <bean id="startQuart" class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+             <property name="triggers">
+                 <list>
+                     <ref bean="doTime"></ref>
+                 </list>
+             </property>
+    </bean>
+</beans>
